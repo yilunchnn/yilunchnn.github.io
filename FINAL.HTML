@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Construcción Inteligente</title>
+  <style>
+    :root {
+      --bg: #f4f6fb;
+      --panel: #ffffff;
+      --panel-soft: #eef3ff;
+      --line: #dfe5f2;
+      --text: #31456a;
+      --muted: #7a8aa8;
+      --blue: #7fa7ff;
+      --blue-dark: #4d72c9;
+      --green: #4caf7d;
+      --green-soft: #dff4e9;
+      --red: #e56a6a;
+      --red-soft: #fde7e7;
+      --yellow: #f0bf4c;
+      --yellow-soft: #fff2cf;
+      --orange: #ff8b5c;
+      --shadow: 0 8px 24px rgba(60, 90, 150, 0.08);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      background: linear-gradient(180deg, #eef3ff 0%, #e7eefc 100%);
+      border-right: 1px solid var(--line);
+      padding: 22px 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 28px;
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #78a0ff, #f4c84f);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+    }
+
+    .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 14px;
+      border-radius: 14px;
+      color: var(--text);
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .nav-item:hover,
+    .nav-item.active {
+      background: rgba(127, 167, 255, 0.18);
+    }
+
+    .nav-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: white;
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      color: var(--blue-dark);
+      box-shadow: var(--shadow);
+    }
+
+    .sidebar-cards {
+      margin-top: 28px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .mini-status {
+      border-radius: 18px;
+      padding: 16px;
+      color: white;
+      box-shadow: var(--shadow);
+    }
+
+    .mini-status h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .mini-status p {
+      margin: 6px 0 0;
+      font-size: 14px;
+      opacity: 0.95;
+    }
+
+    .delay { background: linear-gradient(135deg, #89a8ff, #5b79d1); }
+    .budget { background: linear-gradient(135deg, #93d7c0, #5ca98d); }
+    .payment { background: linear-gradient(135deg, #7690d8, #5a73bc); }
+    .alerts { background: linear-gradient(135deg, #ff9b72, #ea6d44); }
+
+    /* Main */
+    .main {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .topbar {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow);
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .project-box {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .project-tag {
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      color: var(--blue-dark);
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      background: #f9fbff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px 14px;
+      color: var(--muted);
+      min-width: 180px;
+    }
+
+    .avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ffcb7b, #f59b7a);
+      display: grid;
+      place-items: center;
+      color: white;
+      font-weight: bold;
+    }
+
+    .tabs {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 10px 16px;
+      display: flex;
+      gap: 24px;
+      box-shadow: var(--shadow);
+      overflow-x: auto;
+    }
+
+    .tab {
+      padding: 8px 0;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+    }
+
+    .tab.active {
+      color: var(--blue-dark);
+      border-color: var(--blue);
+      font-weight: 700;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 18px;
+    }
+
+    .left-grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .cards-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .metric-card {
+      padding: 18px;
+      min-height: 132px;
+    }
+
+    .metric-title {
+      color: var(--muted);
+      font-size: 15px;
+      margin-bottom: 14px;
+    }
+
+    .metric-value {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .metric-sub {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .good { color: var(--green); }
+    .bad { color: var(--red); }
+    .warn { color: #c79618; }
+
+    .chart-card {
+      padding: 18px;
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      gap: 10px;
+    }
+
+    .section-title h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .section-title span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .chart-wrap {
+      height: 300px;
+      position: relative;
+      background:
+        linear-gradient(to right, rgba(127,167,255,0.08) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(127,167,255,0.08) 1px, transparent 1px);
+      background-size: 48px 48px;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid #edf1f7;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .alerts-card {
+      padding: 18px;
+    }
+
+    .alert-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .alert-item {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .alert-left {
+      display: flex;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .alert-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+
+    .dot-red { background: var(--red); }
+    .dot-green { background: var(--green); }
+    .dot-yellow { background: var(--yellow); }
+
+    .alert-item h4 {
+      margin: 0 0 6px;
+      font-size: 16px;
+    }
+
+    .alert-item p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .btn {
+      border: 1px solid var(--line);
+      background: #f8fbff;
+      color: var(--blue-dark);
+      border-radius: 12px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .side-panel {
+      display: grid;
+      gap: 18px;
+    }
+
+    .progress-card,
+    .ai-card,
+    .change-card,
+    .mini-tabs-card {
+      padding: 18px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 16px;
+      background: #eaf0f7;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 35%;
+      background: linear-gradient(90deg, #6dc089, #87b4ff);
+      transition: width 0.3s ease;
+    }
+
+    .ai-list {
+      display: grid;
+      gap: 14px;
+      margin-top: 10px;
+    }
+
+    .ai-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #edf1f7;
+    }
+
+    .ai-badge {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      color: white;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .badge-red { background: var(--red); }
+    .badge-yellow { background: var(--yellow); }
+
+    .ai-item p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .change-level {
+      display: inline-block;
+      background: var(--red-soft);
+      color: var(--red);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .change-card p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .mini-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .mini-tab {
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: #f5f8ff;
+      border: 1px solid var(--line);
+      cursor: pointer;
+      color: var(--muted);
+    }
+
+    .mini-tab.active {
+      background: var(--panel-soft);
+      color: var(--blue-dark);
+      font-weight: 700;
+    }
+
+    .mini-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .mini-list-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1px solid #edf1f7;
+      padding-bottom: 10px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 1200px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .cards-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        border-right: none;
+        border-bottom: 1px solid var(--line);
+      }
+    }
+
+    @media (max-width: 700px) {
+      .cards-row {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">CI</div>
+        <div>Construcción Inteligente</div>
+      </div>
+
+      <nav class="nav">
+        <div class="nav-item active"><div class="nav-icon">🏠</div>Inicio</div>
+        <div class="nav-item"><div class="nav-icon">🗓</div>Planificación</div>
+        <div class="nav-item"><div class="nav-icon">💰</div>Costos</div>
+        <div class="nav-item"><div class="nav-icon">🧾</div>Facturación</div>
+        <div class="nav-item"><div class="nav-icon">🚚</div>Proveedores</div>
+        <div class="nav-item"><div class="nav-icon">📂</div>Cambios</div>
+        <div class="nav-item"><div class="nav-icon">📊</div>Reportes</div>
+        <div class="nav-item"><div class="nav-icon">📁</div>Archivos</div>
+      </nav>
+
+      <div class="sidebar-cards">
+        <div class="mini-status delay">
+          <h2>-10 días</h2>
+          <p>Probable retraso</p>
+        </div>
+
+        <div class="mini-status budget">
+          <h2>+29%</h2>
+          <p>Costo sobrepresupuestado</p>
+        </div>
+
+        <div class="mini-status payment">
+          <h2>3 días</h2>
+          <p>Próximo pago</p>
+        </div>
+
+        <div class="mini-status alerts">
+          <h2>12</h2>
+          <p>Alertas activas</p>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="project-box">
+          <div>
+            <strong>Proyecto CDIO Bogotá Norte</strong><br />
+            <small style="color:#7a8aa8;">Monitoreo central del proyecto</small>
+          </div>
+          <div class="project-tag">Live</div>
+        </div>
+
+        <div class="top-actions">
+          <div class="pill">35% completada</div>
+          <div class="pill">Buscar proyecto, documento o proveedor</div>
+          <div class="avatar">I</div>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active">Inicio</div>
+        <div class="tab">Planificación</div>
+        <div class="tab">Costos</div>
+        <div class="tab">Facturación</div>
+        <div class="tab">Proveedores</div>
+        <div class="tab">Cambios</div>
+        <div class="tab">Reportes</div>
+        <div class="tab">Archivos</div>
+      </div>
+
+      <div class="content-grid">
+        <section class="left-grid">
+          <div class="cards-row">
+            <div class="card metric-card">
+              <div class="metric-title">Cronograma</div>
+              <div class="metric-value bad">-10 días</div>
+              <div class="metric-sub">Probable retraso detectado</div>
+            </div>
+
+            <div class="card metric-card">
+              <div class="metric-title">Costo real</div>
+              <div class="metric-value">$1,120,150,000</div>
+              <div class="metric-sub bad">29% por encima del presupuesto</div>
+            </div>
+
+            <div class="card metric-card">
+              <div class="metric-title">Flujo de caja</div>
+              <div class="metric-value">$45,600</div>
+              <div class="metric-sub warn">Próximo pago en 3 días</div>
+            </div>
+
+            <div class="card metric-card">
+              <div class="metric-title">Avance de obra</div>
+              <div class="metric-value good" id="progressValue">35%</div>
+              <div class="metric-sub">Progreso físico actual</div>
+            </div>
+          </div>
+
+          <div class="card chart-card">
+            <div class="section-title">
+              <h3>Avance de obra</h3>
+              <span>Comparación entre avance planeado y real</span>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="progressChart" width="900" height="300"></canvas>
+            </div>
+          </div>
+
+          <div class="card alerts-card">
+            <div class="section-title">
+              <h3>Alertas y tareas activas</h3>
+              <span>Problemas detectados que requieren acción</span>
+            </div>
+
+            <div class="alert-list">
+              <div class="alert-item">
+                <div class="alert-left">
+                  <div class="alert-dot dot-red"></div>
+                  <div>
+                    <h4>Probable retraso</h4>
+                    <p>La IA detectó una desviación de 10 días con base en el ritmo actual de avance.</p>
+                  </div>
+                </div>
+                <button class="btn">Ver detalles</button>
+              </div>
+
+              <div class="alert-item">
+                <div class="alert-left">
+                  <div class="alert-dot dot-green"></div>
+                  <div>
+                    <h4>Incremento en precio del cemento</h4>
+                    <p>El costo del cemento subió 12%. Se recomienda revisar compras pendientes.</p>
+                  </div>
+                </div>
+                <button class="btn">Ver detalles</button>
+              </div>
+
+              <div class="alert-item">
+                <div class="alert-left">
+                  <div class="alert-dot dot-yellow"></div>
+                  <div>
+                    <h4>Acta parcial sin aprobar</h4>
+                    <p>La aprobación del acta 56 lleva 5 días pendiente y puede afectar el flujo de caja.</p>
+                  </div>
+                </div>
+                <button class="btn">Ver detalles</button>
+              </div>
+
+              <div class="alert-item">
+                <div class="alert-left">
+                  <div class="alert-dot dot-green"></div>
+                  <div>
+                    <h4>Cambio de diseño pendiente</h4>
+                    <p>Hay una nueva versión del plano estructural que todavía no ha sido validada por el equipo.</p>
+                  </div>
+                </div>
+                <button class="btn">Ver detalles</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <aside class="side-panel">
+          <div class="card progress-card">
+            <div class="section-title">
+              <h3>Avance obra</h3>
+              <span id="sideProgressText">35%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+          </div>
+
+          <div class="card ai-card">
+            <div class="section-title">
+              <h3>IA - Detalles y recomendaciones</h3>
+            </div>
+
+            <div class="ai-list">
+              <div class="ai-item">
+                <div class="ai-badge badge-red">!</div>
+                <p>El sistema predice un costo final 13% mayor si se mantiene el ritmo actual del proyecto.</p>
+              </div>
+
+              <div class="ai-item">
+                <div class="ai-badge badge-yellow">!</div>
+                <p>Se recomienda reprogramar la compra de acero en esta semana por variación de mercado.</p>
+              </div>
+
+              <div class="ai-item">
+                <div class="ai-badge badge-yellow">!</div>
+                <p>La coordinación entre equipos puede mejorar si se valida cada cambio de plano el mismo día.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="card change-card">
+            <div class="section-title">
+              <h3>Cambio reciente</h3>
+            </div>
+
+            <div class="change-level">Crítico</div>
+            <p>
+              Se actualizó la sección estructural de la zona norte. El cambio afecta cantidades,
+              tiempos y secuencia de trabajo.
+            </p>
+            <button class="btn">Ver detalles</button>
+          </div>
+
+          <div class="card mini-tabs-card">
+            <div class="mini-tabs">
+              <div class="mini-tab active" data-tab="costos">Costos</div>
+              <div class="mini-tab" data-tab="avance">Avance</div>
+              <div class="mini-tab" data-tab="documentos">Documentos</div>
+            </div>
+
+            <div class="mini-list" id="miniList"></div>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // -------------------------
+    // Fake project data
+    // -------------------------
+    const projectData = {
+      progress: 35,
+      planned: [8, 14, 20, 25, 29, 33, 37, 41, 45],
+      actual: 8,
+      actualSeries: [8, 11, 16, 21, 24, 28, 30, 34, 35],
+      months: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep"]
+    };
+
+    // -------------------------
+    // Progress bar
+    // -------------------------
+    const progressFill = document.getElementById("progressFill");
+    const progressValue = document.getElementById("progressValue");
+    const sideProgressText = document.getElementById("sideProgressText");
+
+    progressFill.style.width = projectData.progress + "%";
+    progressValue.textContent = projectData.progress + "%";
+    sideProgressText.textContent = projectData.progress + "%";
+
+    // -------------------------
+    // Mini tabs content
+    // -------------------------
+    const miniTabData = {
+      costos: [
+        ["Acero S.A.", "$320,000"],
+        ["Cementos AAA", "$180,000"],
+        ["Acta 50", "Pendiente"]
+      ],
+      avance: [
+        ["Cimentación", "100%"],
+        ["Estructura", "62%"],
+        ["Acabados", "18%"]
+      ],
+      documentos: [
+        ["Plano estructural v6", "Actualizado"],
+        ["Acta parcial 56", "Pendiente"],
+        ["Presupuesto base", "Aprobado"]
+      ]
+    };
+
+    const miniList = document.getElementById("miniList");
+    const miniTabs = document.querySelectorAll(".mini-tab");
+
+    function renderMiniList(tabName) {
+      miniList.innerHTML = "";
+      miniTabData[tabName].forEach(item => {
+        const row = document.createElement("div");
+        row.className = "mini-list-item";
+        row.innerHTML = `<span>${item[0]}</span><strong>${item[1]}</strong>`;
+        miniList.appendChild(row);
+      });
+    }
+
+    miniTabs.forEach(tab => {
+      tab.addEventListener("click", () => {
+        miniTabs.forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        renderMiniList(tab.dataset.tab);
+      });
+    });
+
+    renderMiniList("costos");
+
+    // -------------------------
+    // Tabs interaction
+    // -------------------------
+    document.querySelectorAll(".tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+      });
+    });
+
+    // -------------------------
+    // Draw custom chart with canvas
+    // -------------------------
+    const canvas = document.getElementById("progressChart");
+    const ctx = canvas.getContext("2d");
+
+    function drawChart() {
+      const w = canvas.width;
+      const h = canvas.height;
+      const padding = { top: 30, right: 30, bottom: 45, left: 50 };
+      const chartW = w - padding.left - padding.right;
+      const chartH = h - padding.top - padding.bottom;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // axes
+      ctx.strokeStyle = "#cfd8ea";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padding.left, padding.top);
+      ctx.lineTo(padding.left, padding.top + chartH);
+      ctx.lineTo(padding.left + chartW, padding.top + chartH);
+      ctx.stroke();
+
+      const maxY = 50;
+      const xStep = chartW / (projectData.months.length - 1);
+
+      // horizontal labels/grid
+      ctx.fillStyle = "#7a8aa8";
+      ctx.font = "12px Arial";
+
+      for (let i = 0; i <= 5; i++) {
+        const yVal = i * 10;
+        const y = padding.top + chartH - (yVal / maxY) * chartH;
+
+        ctx.strokeStyle = "rgba(127,167,255,0.12)";
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(padding.left + chartW, y);
+        ctx.stroke();
+
+        ctx.fillText(yVal + "%", 10, y + 4);
+      }
+
+      // x labels
+      projectData.months.forEach((m, i) => {
+        const x = padding.left + i * xStep;
+        ctx.fillStyle = "#7a8aa8";
+        ctx.fillText(m, x - 10, padding.top + chartH + 22);
+      });
+
+      // helper
+      function getPoint(value, index) {
+        const x = padding.left + index * xStep;
+        const y = padding.top + chartH - (value / maxY) * chartH;
+        return { x, y };
+      }
+
+      // area under actual
+      ctx.beginPath();
+      projectData.actualSeries.forEach((v, i) => {
+        const p = getPoint(v, i);
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      });
+      ctx.lineTo(padding.left + chartW, padding.top + chartH);
+      ctx.lineTo(padding.left, padding.top + chartH);
+      ctx.closePath();
+      ctx.fillStyle = "rgba(127,167,255,0.12)";
+      ctx.fill();
+
+      // planned line
+      ctx.beginPath();
+      projectData.planned.forEach((v, i) => {
+        const p = getPoint(v, i);
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      });
+      ctx.strokeStyle = "#9aa7be";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 5]);
+      ctx.stroke();
+
+      // actual line
+      ctx.beginPath();
+      projectData.actualSeries.forEach((v, i) => {
+        const p = getPoint(v, i);
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      });
+      ctx.strokeStyle = "#5b87d7";
+      ctx.lineWidth = 3;
+      ctx.setLineDash([]);
+      ctx.stroke();
+
+      // points on actual
+      projectData.actualSeries.forEach((v, i) => {
+        const p = getPoint(v, i);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = "#5b87d7";
+        ctx.fill();
+      });
+
+      // last point highlight
+      const lastIndex = projectData.actualSeries.length - 1;
+      const lastPoint = getPoint(projectData.actualSeries[lastIndex], lastIndex);
+
+      ctx.beginPath();
+      ctx.arc(lastPoint.x, lastPoint.y, 7, 0, Math.PI * 2);
+      ctx.fillStyle = "#4caf7d";
+      ctx.fill();
+
+      // label bubble
+      const bubbleX = Math.max(lastPoint.x - 45, 100);
+      const bubbleY = lastPoint.y - 55;
+
+      ctx.fillStyle = "#ffffff";
+      roundRect(ctx, bubbleX, bubbleY, 80, 42, 12, true, false);
+      ctx.fillStyle = "#31456a";
+      ctx.font = "bold 16px Arial";
+      ctx.fillText(projectData.progress + "%", bubbleX + 18, bubbleY + 25);
+      ctx.font = "12px Arial";
+      ctx.fillStyle = "#7a8aa8";
+      ctx.fillText("actual", bubbleX + 22, bubbleY + 38);
+
+      // legend
+      ctx.fillStyle = "#5b87d7";
+      ctx.fillRect(w - 210, 18, 16, 4);
+      ctx.fillStyle = "#31456a";
+      ctx.font = "13px Arial";
+      ctx.fillText("Real", w - 185, 24);
+
+      ctx.strokeStyle = "#9aa7be";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 5]);
+      ctx.beginPath();
+      ctx.moveTo(w - 130, 20);
+      ctx.lineTo(w - 110, 20);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "#31456a";
+      ctx.fillText("Planeado", w - 100, 24);
+    }
+
+    function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+      if (typeof radius === "undefined") radius = 5;
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+      if (fill) ctx.fill();
+      if (stroke) ctx.stroke();
+    }
+
+    drawChart();
+
+    // Redraw on resize for sharper layout if needed
+    window.addEventListener("resize", drawChart);
+  </script>
+</body>
+</html>
